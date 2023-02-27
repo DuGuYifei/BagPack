@@ -124,7 +124,7 @@
 
 	import file_import from '../file_import/file_import.vue';
 
-	let tableData = [];
+	const tableData = new Set<Order>();
 
 	export default {
 		data() {
@@ -160,7 +160,7 @@
 					stage: 0,
 					update: new Date(),
 					update_str: "",
-					history: [],
+					history: Array<HistoryItem>(),
 				},
 				calculateUsedOriginMoney: 0,
 				calculateUsedOriginUser: "",
@@ -265,7 +265,7 @@
 							});
 						}
 
-						let norder = {
+						const norder = {
 							id: that.form.id,
 							user: that.form.user,
 							bag: that.form.bag,
@@ -308,17 +308,16 @@
 			},
 
 			handleExport() {
-				let getRequest = getAllOrders(this.db);
+				const getRequest = getAllOrders(this.db);
 
 				getRequest.onsuccess = function(event) {
-					let originData = [];
-					originData = getRequest.result;
-					let jsonData = JSON.stringify(originData);
-					let type = 'application/json';
-					let filename = 'orders.json';
+					const originData = getRequest.result;
+					const jsonData = JSON.stringify(originData);
+					const type = 'application/json';
+					const filename = 'orders.json';
 					downloadFile(jsonData, type, filename);
 				}
-				getRequest.onerror = function(event) {
+				getRequest.onerror = (_event): void => {
 					alert('数据导出失败');
 				}
 			},
@@ -332,15 +331,16 @@
 			}
 
 		},
+
 		mounted() {
 			initStages(this.stages);
 			initDB(this, fetchAndDisplayOrders);
 		},
 	};
 
-	const stages: string[] = ["接单", "订货", "厂家接单", "我收到", "飘洋过海", "寄出", "买家收到(完成)"];
+	const stages = ["接单", "订货", "厂家接单", "我收到", "飘洋过海", "寄出", "买家收到(完成)"];
 
-	function initStages(obj) {
+	const initStages = (obj) => {
 		obj = stages;
 	}
 
@@ -348,9 +348,9 @@
 		stage: number
 		date: Date
 
-		public constructor(id: number, date_str: string) {
+		public constructor(id: number, dateStr: string) {
 			this.stage = id;
-			this.date = new Date(date_str);
+			this.date = new Date(dateStr);
 		}
 	}
 
@@ -358,49 +358,49 @@
 		id: number
 		user: string
 		bag: string
-		buy_price: number
-		sell_price: number
+		buyPrice: number
+		sellPrice: number
 		send_price: number
 		sender: string
 		benefit: number
 		stage: number
-		stage_str: string
+		stageStr: string
 		update: Date
-		update_str: string
-		history: Array < HistoryItem > = []
+		updateStr: string
+		history: Array<HistoryItem> = []
 
-		public constructor(order: any) {
+		public constructor(order: Order) {
 			this.id = order.id;
 			this.user = order.user;
 			this.bag = order.bag;
-			this.buy_price = order.buy_price;
-			this.sell_price = order.sell_price;
+			this.buyPrice = order.buyPrice;
+			this.sellPrice = order.sellPrice;
 			this.send_price = order.send_price;
 			this.sender = order.sender;
-			this.benefit = order.sell_price - order.buy_price - order.send_price;
+			this.benefit = order.sellPrice - order.buyPrice - order.send_price;
 			this.stage = order.history[order.history.length - 1].stage;
-			this.stage_str = stages[order.history[order.history.length - 1].stage];
-			order.history.forEach(stg => {
-				this.history.push(new HistoryItem(stg.stage, stg.date));
-			});
+			this.stageStr = stages[order.history[order.history.length - 1].stage];
+			this.history = order.history.map((historyItem: HistoryItem) => 
+				new HistoryItem(historyItem.stage, historyItem.date.toISOString())
+			)
 			this.update = this.history[this.history.length - 1].date;
-			this.update_str = this.update.getFullYear() + "-" + (this.update.getMonth() + 1) + "-" + this.update
+			this.updateStr = this.update.getFullYear() + "-" + (this.update.getMonth() + 1) + "-" + this.update
 				.getDate();
 		}
 	}
 
-	function importOrdersJson(obj: any, jsonData: any) {
+	const importOrdersJson = (obj: any, jsonData: any): void => {
 		jsonData.forEach(data => {
 			addOrUpdateOrder(obj, data, fetchAndDisplayOrders);
 		});
 	}
 
-	function downloadFile(data, type, filename) {
-		let blob = new Blob([data], {
+	const downloadFile = (data, type, filename):void => {
+		const blob = new Blob([data], {
 			type
 		});
-		let url = URL.createObjectURL(blob);
-		let link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
 		link.download = filename;
 		link.href = url;
 		document.body.appendChild(link);
@@ -409,29 +409,29 @@
 		URL.revokeObjectURL(url);
 	}
 
-	function fetchAndDisplayOrders(obj: any) {
-		let getRequest = getAllOrders(obj.db);
-		getRequest.onsuccess = function(event) {
-			tableData = [];
-			getRequest.result.forEach(data => {
-				tableData.push(new Order(data));
+	const fetchAndDisplayOrders = (obj: any): void => {
+		const getRequest = getAllOrders(obj.db);
+		getRequest.onsuccess = (event): void => {
+			tableData.clear();
+			getRequest.result.forEach((data: Order) => {
+				tableData.add(new Order(data));
 			});
 			obj.filterTableData = computed(() =>
-				tableData.filter(
+				Array.from(tableData).filter(
 					(data) =>
 					!obj.search ||
 					data.user.toLowerCase().includes(obj.search.toLowerCase()) ||
 					data.bag.toLowerCase().includes(obj.search.toLowerCase()) ||
 					data.sender.toLowerCase().includes(obj.search.toLowerCase()) ||
-					data.update_str.includes(obj.search)
+					data.updateStr.includes(obj.search)
 				));
 		};
-		getRequest.onerror = function(event) {
+		getRequest.onerror = (_event): void => {
 			alert('数据刷新失败');
 		}
 	};
 
-	export function calculateBenefit(obj) {
+	export const calculateBenefit = (obj): void => {
 		obj.sumBenefit = 0;
 		tableData.forEach(data => obj.sumBenefit += data.benefit);
 	}

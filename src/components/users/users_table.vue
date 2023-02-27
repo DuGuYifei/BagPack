@@ -65,12 +65,15 @@
 		deleteUser,
 		addOrUpdateUser
 	} from '../../views/panel/panel.vue';
+	import { UserInterface } from '../../models/User';
 	import file_import from '../file_import/file_import.vue';
 
 	export default {
 		data() {
 			return {
-				fileValue: {val:null},
+				fileValue: {
+					val: null
+				},
 				db: null,
 				sortOrders: [{
 						label: '降序',
@@ -111,7 +114,7 @@
 			},
 
 			handleEdit() {
-				let nuser = {
+				const nuser = {
 					name: this.form.name,
 					deposit: Number(this.form.deposit) + Number(this.form.increase) - Number(this.form.decrease),
 					used: this.form.used
@@ -121,17 +124,17 @@
 			},
 
 			handleExport() {
-				let getRequest = getAllUsers(this.db);
+				const getRequest = getAllUsers(this.db);
 
-				getRequest.onsuccess = function(event) {
-					let originData = [];
-					originData = getRequest.result;
-					let jsonData = JSON.stringify(originData);
-					let type = 'application/json';
-					let filename = 'users.json';
+				getRequest.onsuccess = (_event): void => {;
+					const originData = getRequest.result;
+					const jsonData = JSON.stringify(originData);
+					const type = 'application/json';
+					const filename = 'users.json';
 					downloadFile(jsonData, type, filename);
 				}
-				getRequest.onerror = function(event) {
+
+				getRequest.onerror = (_event): void => {
 					alert('数据导出失败');
 				}
 			},
@@ -145,7 +148,7 @@
 		},
 	};
 
-	let tableData = [];
+	const tableData = new Set<User>();
 
 	class User {
 		id: number
@@ -154,7 +157,7 @@
 		used: number
 		balance: number
 
-		public constructor(user: any, id: number) {
+		public constructor(user: UserInterface, id: number) {
 			this.id = id;
 			this.name = user.name;
 			this.deposit = user.deposit;
@@ -184,26 +187,28 @@
 	}
 
 	export function fetchAndDisplayUsers(obj: any) {
-		let getRequest = getAllUsers(obj.db);
-		getRequest.onsuccess = function(event) {
-			tableData = [];
+		const getRequest = getAllUsers(obj.db);
+
+		getRequest.onsuccess = (_event): void => {
+			tableData.clear();
 			let i = 1;
-			getRequest.result.forEach(data => {
-				tableData.push(new User(data, i++));
+			getRequest.result.forEach((data: User) => {
+				tableData.add(new User(data, i++));
 			});
 			obj.filterTableData = computed(() =>
-				tableData.filter(
+				Array.from(tableData).filter(
 					(data) =>
 					!obj.search ||
 					data.name.toLowerCase().includes(obj.search.toLowerCase())
 				));
 		}
-		getRequest.onerror = function(event) {
+
+		getRequest.onerror = (_event): void => {
 			alert('数据刷新失败');
 		}
 	}
 
-	export function calculateDeposit(obj) {
+	export const calculateDeposit = (obj): void => {
 		obj.sumDeposit = 0;
 		tableData.forEach(data => obj.sumDeposit += data.balance);
 		console.log(obj.sumDeposit);
