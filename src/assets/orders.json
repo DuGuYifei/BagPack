@@ -1,0 +1,80 @@
+[
+	{
+		"id": 1,
+		"user": "朋友1",
+		"bag": "bag1",
+		"buy_price": 0,
+		"sell_price": 100002,
+		"send_price": 2,
+		"sender": "快递员1",
+		"history": [{
+				"stage": 0,
+				"date": "2023-02-23"
+			},
+			{
+				"stage": 1,
+				"date": "2023-02-24"
+			},
+			{
+				"stage": 2,
+				"date": "2023-02-24"
+			},
+			{
+				"stage": 3,
+				"date": "2023-12-24"
+			}
+		]
+	},
+	{
+		"id": 2,
+		"user": "朋友2",
+		"bag": "bag2",
+		"buy_price": 100,
+		"sell_price": 102,
+		"send_price": 2,
+		"sender": "快递员1",
+		"history": [{
+				"stage": 0,
+				"date": "2023-01-23"
+			},
+			{
+				"stage": 1,
+				"date": "2023-01-24"
+			},
+			{
+				"stage": 2,
+				"date": "2023-01-24"
+			},
+			{
+				"stage": 6,
+				"date": "2023-01-24"
+			}
+		]
+	},
+	{
+		"id": 3,
+		"user": "朋友1",
+		"bag": "bag2",
+		"buy_price": 100,
+		"sell_price": 102,
+		"send_price": 2,
+		"sender": "快递员2",
+		"history": [{
+				"stage": 0,
+				"date": "2023-01-23"
+			},
+			{
+				"stage": 1,
+				"date": "2023-01-24"
+			},
+			{
+				"stage": 2,
+				"date": "2023-01-24"
+			},
+			{
+				"stage": 3,
+				"date": "2023-01-25"
+			}
+		]
+	}
+]
