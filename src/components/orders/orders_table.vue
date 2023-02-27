@@ -9,9 +9,9 @@
 		<el-table-column prop="stage_str" label="状态" width="120" />
 		<el-table-column prop="update_str" label="最新更新日期" width="135" sortable :sort-orders="sortOrders"
 			sort-by="update" />
-		<el-table-column prop="benefit" label="收入计算" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="buy_price" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="sell_price" label="我买价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="benefit" label="收入计算" width="110" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="buy_price" label="我买价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="sell_price" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="sender" label="快递员" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="send_price" label="快递费" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column fixed="right" align="center" width="250">
