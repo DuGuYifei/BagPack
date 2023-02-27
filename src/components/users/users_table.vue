@@ -1,0 +1,214 @@
+<template>
+	<el-button type="danger" @click="handleCreate()">Create</el-button>
+	<el-button type="danger" @click="handleExport()">Export</el-button>
+	<el-button type="danger" @click="dialogFileVisible = true;">Import</el-button>
+	<el-table :data="filterTableData" style="width: 100%" :default-sort="{ prop: 'id', order: 'ascending' }">
+		<el-table-column prop="id" label="id" width="80" />
+		<el-table-column prop="name" label="买家" width="80" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="balance" label="余额" width="80" />
+		<el-table-column prop="used" label="使用" width="90" />
+		<el-table-column prop="deposit" label="总存钱量" width="90" />
+		<el-table-column align="center">
+			<template #header>
+				<el-input v-model="search" size="small" placeholder="Type to search by user" />
+			</template>
+			<template #default="scope">
+				<el-button size="small"
+					@click="dialogFormVisible = true; form.name = scope.row.name; form.deposit = scope.row.deposit; form.used = scope.row.used; form.increase = 0; form.decrease = 0;">
+					编辑
+				</el-button>
+				<el-button size="small" type="danger" @click="handleDelete(scope.row.name)">删除</el-button>
+			</template>
+		</el-table-column>
+	</el-table>
+	<el-dialog v-model="dialogFormVisible" title="详情/编辑">
+		<el-form :model="form">
+			<el-form-item label="客户" label-width="140px">
+				<el-input v-model="form.name" autocomplete="off" style="width: 250px;" />
+			</el-form-item>
+			<el-form-item label="总存钱数" label-width="140px">
+				{{form.deposit}} +&nbsp;
+				<el-input v-model="form.increase" autocomplete="off" style="width: 100px;" />
+				&nbsp;&nbsp;-&nbsp;&nbsp;
+				<el-input v-model="form.decrease" autocomplete="off" style="width: 100px;" />
+			</el-form-item>
+		</el-form>
+		<template #footer>
+			<span class="dialog-footer">
+				<el-button @click="dialogFormVisible = false">Cancel</el-button>
+				<el-button type="primary" @click="dialogFormVisible = false; handleEdit();">
+					Confirm
+				</el-button>
+			</span>
+		</template>
+	</el-dialog>
+	<el-dialog v-model="dialogFileVisible" title="Import data from file">
+		<file_import :refData="fileValue" />
+		<template #footer>
+			<span class="dialog-footer">
+				<el-button @click="dialogFileVisible = false">Cancel</el-button>
+				<el-button type="primary" @click="dialogFileVisible = false; handleImport();">
+					Confirm
+				</el-button>
+			</span>
+		</template>
+	</el-dialog>
+</template>
+
+<script lang="ts">
+	import {
+		computed,
+	} from 'vue';
+	import {
+		initDB,
+		getAllUsers,
+		deleteUser,
+		addOrUpdateUser
+	} from '../../views/panel/panel.vue';
+	import file_import from '../file_import/file_import.vue';
+
+	export default {
+		data() {
+			return {
+				fileValue: {val:null},
+				db: null,
+				sortOrders: [{
+						label: '降序',
+						value: 'descending'
+					},
+					{
+						label: '升序',
+						value: 'ascending'
+					},
+				],
+				search: "",
+				filterTableData: [],
+				userCreate: "",
+				dialogFormVisible: false,
+				dialogFileVisible: false,
+				form: {
+					name: "",
+					deposit: 0,
+					increase: 0,
+					decrease: 0,
+					used: 0
+				},
+			}
+		},
+
+		methods: {
+			handleDelete(name: string) {
+				deleteUser(this, name, fetchAndDisplayUsers);
+			},
+
+			handleCreate() {
+				this.form.name = "";
+				this.form.deposit = 0;
+				this.form.increase = 0;
+				this.form.decrease = 0;
+				this.form.used = 0;
+				this.dialogFormVisible = true;
+			},
+
+			handleEdit() {
+				let nuser = {
+					name: this.form.name,
+					deposit: Number(this.form.deposit) + Number(this.form.increase) - Number(this.form.decrease),
+					used: this.form.used
+				};
+				addOrUpdateUser(this, nuser, fetchAndDisplayUsers);
+				this.search = nuser.name;
+			},
+
+			handleExport() {
+				let getRequest = getAllUsers(this.db);
+
+				getRequest.onsuccess = function(event) {
+					let originData = [];
+					originData = getRequest.result;
+					let jsonData = JSON.stringify(originData);
+					let type = 'application/json';
+					let filename = 'users.json';
+					downloadFile(jsonData, type, filename);
+				}
+				getRequest.onerror = function(event) {
+					alert('数据导出失败');
+				}
+			},
+
+			handleImport() {
+				importUsersJson(this, this.fileValue.val);
+			}
+		},
+		mounted() {
+			initDB(this, fetchAndDisplayUsers);
+		},
+	};
+
+	let tableData = [];
+
+	class User {
+		id: number
+		name: string
+		deposit: number
+		used: number
+		balance: number
+
+		public constructor(user: any, id: number) {
+			this.id = id;
+			this.name = user.name;
+			this.deposit = user.deposit;
+			this.used = user.used;
+			this.balance = user.deposit - user.used;
+		}
+	}
+
+	function importUsersJson(obj: any, jsonData: any) {
+		jsonData.forEach(data => {
+			addOrUpdateUser(obj, data, fetchAndDisplayUsers);
+		});
+	}
+
+	function downloadFile(data, type, filename) {
+		let blob = new Blob([data], {
+			type
+		});
+		let url = URL.createObjectURL(blob);
+		let link = document.createElement('a');
+		link.download = filename;
+		link.href = url;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	}
+
+	export function fetchAndDisplayUsers(obj: any) {
+		let getRequest = getAllUsers(obj.db);
+		getRequest.onsuccess = function(event) {
+			tableData = [];
+			let i = 1;
+			getRequest.result.forEach(data => {
+				tableData.push(new User(data, i++));
+			});
+			obj.filterTableData = computed(() =>
+				tableData.filter(
+					(data) =>
+					!obj.search ||
+					data.name.toLowerCase().includes(obj.search.toLowerCase())
+				));
+		}
+		getRequest.onerror = function(event) {
+			alert('数据刷新失败');
+		}
+	}
+
+	export function calculateDeposit(obj) {
+		obj.sumDeposit = 0;
+		tableData.forEach(data => obj.sumDeposit += data.balance);
+		console.log(obj.sumDeposit);
+	}
+</script>
+
+<style>
+</style>
