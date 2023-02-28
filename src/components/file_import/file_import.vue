@@ -19,11 +19,6 @@
 		UploadFilled
 	} from '@element-plus/icons-vue';
 
-	import {
-		defineProps,
-	} from 'vue';
-	
-
 	export default {
 		components: {
 			UploadFilled,
@@ -40,11 +35,14 @@
 		},
 		methods: {
 			handleChange(file, fileList) {
-				let reader = new FileReader();
+				const reader = new FileReader();
 				reader.onload = (event) => {
-					let jsonData = JSON.parse(event.target.result);
-					if(!!jsonData)
+					try {
+						const jsonData = JSON.parse(event.target.result);
 						this.refData.val = jsonData;
+					} catch (e) {
+						console.log(`File Import Error: ${e}`)
+					}
 				};
 				reader.readAsText(file.raw);
 			}

@@ -47,7 +47,7 @@
 	</el-tabs>
 </template>
 
-<script>
+<script lang="ts">
 	import {
 		Suitcase,
 		User,
@@ -55,10 +55,10 @@
 	} from '@element-plus/icons-vue';
 	import orders_table, {calculateBenefit} from '../../components/orders/orders_table.vue';
 	import users_table, {calculateDeposit} from '../../components/users/users_table.vue';
-
+	import { Tabs } from '../../models/Tabs';
 
 	export default {
-		data(){
+		data() {
 			return {
 				sumDeposit: 0,
 				sumBenefit: 0,
@@ -70,9 +70,9 @@
 			User,
 			CreditCard
 		},
-		methods:{
-			handleTabClick(tab, event){
-				if(tab.index == 2){
+		methods: {
+			handleTabClick(tab, _event){
+				if(Number(tab.index) === Tabs.Me){
 					calculateBenefit(this);
 					calculateDeposit(this);
 				}
@@ -82,22 +82,23 @@
 
 	export let activeIndex = 0;
 
-	export function initDB(obj, func = undefined) {
-		let requestDB = indexedDB.open("bagPack", 1);
+	export const initDB = (obj, callback?: Function) => {
+		const requestDB = indexedDB.open("bagPack", 1);
 
-		requestDB.onsuccess = function(event) {
-			obj.db = event.target.result;
+		requestDB.onsuccess = (event): void  => {
+			obj.db = event!.target!['result'];
 
-			if (!!func)
-				func(obj);
+			if (callback) {
+				callback(obj);
+			}
 		};
 
-		requestDB.onerror = function(event) {
-			console.log("Database error: " + event.target.errorCode);
+		requestDB.onerror = (event): void => {
+			console.log("Database error: " + event!.target!['errorCode']);
 		};
 
-		requestDB.onupgradeneeded = function(event) {
-			obj.db = event.target.result;
+		requestDB.onupgradeneeded = (event): void => {
+			obj.db = event!.target!['result'];
 			obj.db.createObjectStore("orders", {
 				keyPath: "id",
 				autoIncrement: true
@@ -108,42 +109,44 @@
 		};
 	}
 
-	export function addOrUpdateUser(obj, user, func = undefined) {
-		let request = obj.db.transaction(['users'], 'readwrite')
+	export const addOrUpdateUser = (obj, user, callback?: Function): void => {
+		const request = obj.db.transaction(['users'], 'readwrite')
 			.objectStore('users')
 			.put({
 				name: user.name,
 				deposit: user.deposit,
 				used: user.used
 			});
-		request.onsuccess = function(event) {
+		request.onsuccess = (_event): void => {
 			console.log('数据写入成功');
-			if (!!func)
-				func(obj);
-			else
+			if (callback) {
+				callback(obj);
+			} else {
 				location.reload();
+			}
 		}
-		request.onerror = function(event) {
+		request.onerror = (_event): void => {
 			alert('数据写入失败');
 		}
 	}
 
-	export function deleteUser(obj, user_name, func) {
-		let request = obj.db.transaction(['users'], 'readwrite')
+	export const deleteUser = (obj, userName, callback: Function): void => {
+		const request = obj.db.transaction(['users'], 'readwrite')
 			.objectStore('users')
-			.delete(user_name);
-		request.onsuccess = function(event) {
+			.delete(userName);
+		request.onsuccess = (_event): void => {
 			console.log('数据删除成功');
-			func(obj);
+			callback(obj);
 		}
-		request.onerror = function(event) {
+		request.onerror = (_event): void => {
 			alert('数据删除失败');
 		}
 	}
 
-	export function addOrUpdateOrder(obj, order, func) {
-		if (order.id == -1) {
-			let request = obj.db.transaction(['orders'], 'readwrite')
+	export const addOrUpdateOrder = (obj, order, callback: Function): void => {
+		const isNew = order.id === -1;
+		if (isNew) {
+			const request = obj.db.transaction(['orders'], 'readwrite')
 				.objectStore('orders')
 				.put({
 					user: order.user,
@@ -154,17 +157,17 @@
 					sender: order.sender,
 					history: JSON.parse(JSON.stringify(order.history))
 				});
-			request.onsuccess = function(event) {
+			request.onsuccess = (_event): void => {
 				console.log('数据写入成功');
-				func(obj);
+				callback(obj);
 			}
-			request.onerror = function(event) {
+			request.onerror = (_event): void => {
 				alert('数据写入失败');
 			}
 			return;
 		}
 
-		let request = obj.db.transaction(['orders'], 'readwrite')
+		const request = obj.db.transaction(['orders'], 'readwrite')
 			.objectStore('orders')
 			.put({
 				id: order.id,
@@ -176,29 +179,29 @@
 				sender: order.sender,
 				history: JSON.parse(JSON.stringify(order.history))
 			});
-		request.onsuccess = function(event) {
+		request.onsuccess = (_event): void => {
 			console.log('数据写入成功');
-			func(obj);
+			callback(obj);
 		}
-		request.onerror = function(event) {
+		request.onerror = (_event): void => {
 			alert('数据写入失败');
 		}
 	}
 
-	export function deleteOrder(obj, order_id, func) {
-		let request = obj.db.transaction(['orders'], 'readwrite')
+	export const deleteOrder = (obj, orderId, callback: Function): void => {
+		const request = obj.db.transaction(['orders'], 'readwrite')
 			.objectStore('orders')
-			.delete(order_id);
-		request.onsuccess = function(event) {
+			.delete(orderId);
+		request.onsuccess = (_event): void => {
 			console.log('数据删除成功');
-			func(obj);
+			callback(obj);
 		}
-		request.onerror = function(event) {
+		request.onerror = (_event): void => {
 			alert('数据删除失败');
 		}
 	}
 
-	export function getAllUsers(db) {
+	export const getAllUsers = (db) => {
 		return db.transaction(['users'], 'readwrite')
 			.objectStore('users').getAll();
 	}

@@ -6,14 +6,14 @@
 		<el-table-column fixed prop="id" label="id" width="70" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="user" label="买家" width="80" />
 		<el-table-column prop="bag" label="包名" width="80" />
-		<el-table-column prop="stage_str" label="状态" width="120" />
-		<el-table-column prop="update_str" label="最新更新日期" width="135" sortable :sort-orders="sortOrders"
+		<el-table-column prop="stageStr" label="状态" width="120" />
+		<el-table-column prop="updateStr" label="最新更新日期" width="135" sortable :sort-orders="sortOrders"
 			sort-by="update" />
 		<el-table-column prop="benefit" label="收入计算" width="110" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="buy_price" label="我买价" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="sell_price" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="buyPrice" label="我买价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="sellPrice" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="sender" label="快递员" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="send_price" label="快递费" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="sendPrice" label="快递费" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column fixed="right" align="center" width="250">
 			<template #header>
 				<el-input v-model="search" size="small"
@@ -25,7 +25,7 @@
 				</el-button>
 				<el-button size="small" @click="handleNext(scope.row.id)">新状态</el-button>
 				<el-button size="small" type="danger"
-					@click="deleteId = scope.row.id; deleteMoney = scope.row.sell_price; deleteUser = scope.row.user; dialogDeleteVisible=true;">
+					@click="deleteId = scope.row.id; deleteMoney = scope.row.sellPrice; deleteUser = scope.row.user; dialogDeleteVisible=true;">
 					删除
 				</el-button>
 			</template>
@@ -43,13 +43,13 @@
 				<el-input v-model="form.bag" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="我买价" label-width="140px">
-				<el-input v-model="form.buy_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.buyPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="我卖价" label-width="140px">
-				<el-input v-model="form.sell_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.sellPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="快递费" label-width="140px">
-				<el-input v-model="form.send_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.sendPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="快递员" label-width="140px">
 				<el-input v-model="form.sender" autocomplete="off" style="width: 300px;" />
@@ -59,7 +59,7 @@
 			</el-form-item>
 			<el-form-item label="当前状态" label-width="140px">
 				<el-input v-model="form.stage" autocomplete="off" style="width: 300px;" />
-				&nbsp;&nbsp; 更新时间 {{form.update_str}}
+				&nbsp;&nbsp; 更新时间 {{form.updateStr}}
 			</el-form-item>
 			<p>
 				历史：<br />
@@ -124,7 +124,7 @@
 
 	import file_import from '../file_import/file_import.vue';
 
-	let tableData = [];
+	const tableData = new Set<Order>();
 
 	export default {
 		data() {
@@ -152,15 +152,15 @@
 					id: -1,
 					user: "",
 					bag: "",
-					buy_price: 0,
-					sell_price: 0,
-					send_price: 0,
+					buyPrice: 0,
+					sellPrice: 0,
+					sendPrice: 0,
 					sender: "",
 					benefit: 0,
 					stage: 0,
 					update: new Date(),
-					update_str: "",
-					history: [],
+					updateStr: "",
+					history: Array<HistoryItem>(),
 				},
 				calculateUsedOriginMoney: 0,
 				calculateUsedOriginUser: "",
@@ -194,9 +194,9 @@
 				this.form.id = -1;
 				this.form.user = "";
 				this.form.bag = "";
-				this.form.buy_price = 0;
-				this.form.sell_price = 0;
-				this.form.send_price = 0;
+				this.form.buyPrice = 0;
+				this.form.sellPrice = 0;
+				this.form.sendPrice = 0;
 				this.form.sender = "";
 				this.form.benefit = 0;
 				this.form.stage = 0;
@@ -205,7 +205,7 @@
 					stage: 0,
 					date: this.form.update
 				}];
-				this.form.update_str = this.dateToString(this.form.update);
+				this.form.updateStr = this.dateToString(this.form.update);
 				this.calculateUsedOriginMoney = 0;
 				this.calculateUsedOriginUser = "";
 				this.dialogFormVisible = true;
@@ -237,7 +237,7 @@
 					let that = this;
 					getOrderRequest.onsuccess = function(event) {
 						that.form = new Order(getOrderRequest.result);
-						that.calculateUsedOriginMoney = that.form.sell_price;
+						that.calculateUsedOriginMoney = that.form.sellPrice;
 						that.calculateUsedOriginUser = that.form.user;
 						that.dialogFormVisible = true;
 					}
@@ -265,13 +265,13 @@
 							});
 						}
 
-						let norder = {
+						const norder = {
 							id: that.form.id,
 							user: that.form.user,
 							bag: that.form.bag,
-							buy_price: that.form.buy_price,
-							sell_price: that.form.sell_price,
-							send_price: that.form.send_price,
+							buyPrice: that.form.buyPrice,
+							sellPrice: that.form.sellPrice,
+							sendPrice: that.form.sendPrice,
 							sender: that.form.sender,
 							history: that.form.history
 						};
@@ -280,21 +280,21 @@
 
 						if (norder.user != that.calculateUsedOriginUser) {
 							let tempUser = getRequest.result;
-							tempUser.used += norder.sell_price;
+							tempUser.used += norder.sellPrice;
 							addOrUpdateUser(that, tempUser);
 							let getOldRequest = getUser(that.db, that.calculateUsedOriginUser);
 							getOldRequest.onsuccess = function(event) {
 								let originUser = getOldRequest.result;
-								originUser.used -= norder.sell_price;
+								originUser.used -= norder.sellPrice;
 								addOrUpdateUser(that, originUser);
 							}
 							getRequest.onerror = function(event) {
 								alert('原用户获取失败');
 								return;
 							}
-						} else if (norder.sell_price != that.calculateUsedOriginMoney) {
+						} else if (norder.sellPrice != that.calculateUsedOriginMoney) {
 							let tempUser = getRequest.result;
-							tempUser.used -= that.calculateUsedOriginMoney - norder.sell_price;
+							tempUser.used -= that.calculateUsedOriginMoney - norder.sellPrice;
 							addOrUpdateUser(that, tempUser);
 						}
 
@@ -308,17 +308,16 @@
 			},
 
 			handleExport() {
-				let getRequest = getAllOrders(this.db);
+				const getRequest = getAllOrders(this.db);
 
 				getRequest.onsuccess = function(event) {
-					let originData = [];
-					originData = getRequest.result;
-					let jsonData = JSON.stringify(originData);
-					let type = 'application/json';
-					let filename = 'orders.json';
+					const originData = getRequest.result;
+					const jsonData = JSON.stringify(originData);
+					const type = 'application/json';
+					const filename = 'orders.json';
 					downloadFile(jsonData, type, filename);
 				}
-				getRequest.onerror = function(event) {
+				getRequest.onerror = (_event): void => {
 					alert('数据导出失败');
 				}
 			},
@@ -332,15 +331,16 @@
 			}
 
 		},
+
 		mounted() {
 			initStages(this.stages);
 			initDB(this, fetchAndDisplayOrders);
 		},
 	};
 
-	const stages: string[] = ["接单", "订货", "厂家接单", "我收到", "飘洋过海", "寄出", "买家收到(完成)"];
+	const stages = ["接单", "订货", "厂家接单", "我收到", "飘洋过海", "寄出", "买家收到(完成)"];
 
-	function initStages(obj) {
+	const initStages = (obj) => {
 		obj = stages;
 	}
 
@@ -348,9 +348,9 @@
 		stage: number
 		date: Date
 
-		public constructor(id: number, date_str: string) {
+		public constructor(id: number, dateStr: string) {
 			this.stage = id;
-			this.date = new Date(date_str);
+			this.date = new Date(dateStr);
 		}
 	}
 
@@ -358,49 +358,49 @@
 		id: number
 		user: string
 		bag: string
-		buy_price: number
-		sell_price: number
-		send_price: number
+		buyPrice: number
+		sellPrice: number
+		sendPrice: number
 		sender: string
 		benefit: number
 		stage: number
-		stage_str: string
+		stageStr: string
 		update: Date
-		update_str: string
-		history: Array < HistoryItem > = []
+		updateStr: string
+		history: Array<HistoryItem> = []
 
-		public constructor(order: any) {
+		public constructor(order: Order) {
 			this.id = order.id;
 			this.user = order.user;
 			this.bag = order.bag;
-			this.buy_price = order.buy_price;
-			this.sell_price = order.sell_price;
-			this.send_price = order.send_price;
+			this.buyPrice = order.buyPrice;
+			this.sellPrice = order.sellPrice;
+			this.sendPrice = order.sendPrice;
 			this.sender = order.sender;
-			this.benefit = order.sell_price - order.buy_price - order.send_price;
+			this.benefit = order.sellPrice - order.buyPrice - order.sendPrice;
 			this.stage = order.history[order.history.length - 1].stage;
-			this.stage_str = stages[order.history[order.history.length - 1].stage];
-			order.history.forEach(stg => {
-				this.history.push(new HistoryItem(stg.stage, stg.date));
-			});
+			this.stageStr = stages[order.history[order.history.length - 1].stage];
+			this.history = order.history.map((historyItem: any) => 
+				new HistoryItem(historyItem.stage, historyItem.date)
+			)
 			this.update = this.history[this.history.length - 1].date;
-			this.update_str = this.update.getFullYear() + "-" + (this.update.getMonth() + 1) + "-" + this.update
+			this.updateStr = this.update.getFullYear() + "-" + (this.update.getMonth() + 1) + "-" + this.update
 				.getDate();
 		}
 	}
 
-	function importOrdersJson(obj: any, jsonData: any) {
+	const importOrdersJson = (obj: any, jsonData: any): void => {
 		jsonData.forEach(data => {
 			addOrUpdateOrder(obj, data, fetchAndDisplayOrders);
 		});
 	}
 
-	function downloadFile(data, type, filename) {
-		let blob = new Blob([data], {
+	const downloadFile = (data, type, filename):void => {
+		const blob = new Blob([data], {
 			type
 		});
-		let url = URL.createObjectURL(blob);
-		let link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
 		link.download = filename;
 		link.href = url;
 		document.body.appendChild(link);
@@ -409,29 +409,29 @@
 		URL.revokeObjectURL(url);
 	}
 
-	function fetchAndDisplayOrders(obj: any) {
-		let getRequest = getAllOrders(obj.db);
-		getRequest.onsuccess = function(event) {
-			tableData = [];
-			getRequest.result.forEach(data => {
-				tableData.push(new Order(data));
+	const fetchAndDisplayOrders = (obj: any): void => {
+		const getRequest = getAllOrders(obj.db);
+		getRequest.onsuccess = (event): void => {
+			tableData.clear();
+			getRequest.result.forEach((data: Order) => {
+				tableData.add(new Order(data));
 			});
 			obj.filterTableData = computed(() =>
-				tableData.filter(
+				Array.from(tableData).filter(
 					(data) =>
 					!obj.search ||
 					data.user.toLowerCase().includes(obj.search.toLowerCase()) ||
 					data.bag.toLowerCase().includes(obj.search.toLowerCase()) ||
 					data.sender.toLowerCase().includes(obj.search.toLowerCase()) ||
-					data.update_str.includes(obj.search)
+					data.updateStr.includes(obj.search)
 				));
 		};
-		getRequest.onerror = function(event) {
+		getRequest.onerror = (_event): void => {
 			alert('数据刷新失败');
 		}
 	};
 
-	export function calculateBenefit(obj) {
+	export const calculateBenefit = (obj): void => {
 		obj.sumBenefit = 0;
 		tableData.forEach(data => obj.sumBenefit += data.benefit);
 	}
