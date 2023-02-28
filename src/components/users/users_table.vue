@@ -1,5 +1,5 @@
 <template>
-	<el-button type="danger" @click="handleCreate()">Create</el-button>
+	<el-button type="danger" @click="handleCreate(); isEdit = false;">Create</el-button>
 	<el-button type="danger" @click="handleExport()">Export</el-button>
 	<el-button type="danger" @click="dialogFileVisible = true;">Import</el-button>
 	<el-table :data="filterTableData" style="width: 100%" :default-sort="{ prop: 'id', order: 'ascending' }">
@@ -14,7 +14,7 @@
 			</template>
 			<template #default="scope">
 				<el-button size="small"
-					@click="dialogFormVisible = true; form.name = scope.row.name; form.deposit = scope.row.deposit; form.used = scope.row.used; form.increase = 0; form.decrease = 0;">
+					@click="dialogFormVisible = true; isEdit = true; beforeEditName = scope.row.name; form.name = scope.row.name; form.deposit = scope.row.deposit; form.used = scope.row.used; form.increase = 0; form.decrease = 0;">
 					编辑
 				</el-button>
 				<el-button size="small" type="danger" @click="handleDelete(scope.row.name)">删除</el-button>
@@ -43,7 +43,7 @@
 		</template>
 	</el-dialog>
 	<el-dialog v-model="dialogFileVisible" title="Import data from file">
-		<file_import :refData="fileValue" />
+		<file_import :refData="fileValue" :fileList="fileList" />
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button @click="dialogFileVisible = false">Cancel</el-button>
@@ -74,6 +74,7 @@
 				fileValue: {
 					val: null
 				},
+				fileList: [],
 				db: null,
 				sortOrders: [{
 						label: '降序',
@@ -96,6 +97,8 @@
 					decrease: 0,
 					used: 0
 				},
+				isEdit: false,
+				beforeEditName: ""
 			}
 		},
 
@@ -119,6 +122,8 @@
 					deposit: Number(this.form.deposit) + Number(this.form.increase) - Number(this.form.decrease),
 					used: this.form.used
 				};
+				if(this.isEdit)
+					deleteUser(this, this.beforeEditName, ()=>{});
 				addOrUpdateUser(this, nuser, fetchAndDisplayUsers);
 				this.search = nuser.name;
 			},
@@ -141,6 +146,7 @@
 
 			handleImport() {
 				importUsersJson(this, this.fileValue.val);
+				this.fileList = [];
 			}
 		},
 		mounted() {

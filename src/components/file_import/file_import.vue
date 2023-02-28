@@ -1,5 +1,5 @@
 <template>
-	<el-upload class="upload-demo" drag :auto-upload="false" :on-change="handleChange">
+	<el-upload class="upload-demo" drag :auto-upload="false" :on-change="handleChange" :file-list="fileList">
 		<el-icon class="el-icon--upload">
 			<upload-filled />
 		</el-icon>
@@ -27,10 +27,9 @@
 			refData: {
 				required: true
 			},
-		},
-		data(){
-			return {
-				fileVal: []
+			fileList: {
+				type: Array,
+				required: true
 			}
 		},
 		methods: {

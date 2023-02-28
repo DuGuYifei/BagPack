@@ -95,7 +95,7 @@
 		</template>
 	</el-dialog>
 	<el-dialog v-model="dialogFileVisible" title="Import data from file">
-		<file_import :refData="fileValue" />
+		<file_import :refData="fileValue" :fileList="fileList" />
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button @click="dialogFileVisible = false">Cancel</el-button>
@@ -132,6 +132,7 @@
 				fileValue: {
 					val: null
 				},
+				fileList: [],
 				stages: ["接单", "订货", "厂家接单", "我收到", "飘洋过海", "寄出", "买家收到(完成)"],
 				db: null,
 				sortOrders: [{
@@ -237,7 +238,7 @@
 					let that = this;
 					getOrderRequest.onsuccess = function(event) {
 						that.form = new Order(getOrderRequest.result);
-						that.calculateUsedOriginMoney = that.form.sellPrice;
+						that.calculateUsedOriginMoney = Number(that.form.sellPrice);
 						that.calculateUsedOriginUser = that.form.user;
 						that.dialogFormVisible = true;
 					}
@@ -324,6 +325,7 @@
 
 			handleImport() {
 				importOrdersJson(this, this.fileValue.val);
+				this.fileList = [];
 			},
 
 			dateToString(date: Date) {

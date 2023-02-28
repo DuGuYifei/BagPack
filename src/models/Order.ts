@@ -4,9 +4,9 @@ export interface OrderInterface {
 	id: string;
 	user: string;
 	bag: string;
-	buy_price: number;
-	sell_price: number;
-	send_price: number;
+	buyPrice: number;
+	sellPrice: number;
+	sendPrice: number;
 	sender: string;
 	history: Array<HistoryItemInterface>;
 }

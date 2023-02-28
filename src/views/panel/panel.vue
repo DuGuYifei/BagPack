@@ -151,9 +151,9 @@
 				.put({
 					user: order.user,
 					bag: order.bag,
-					buy_price: order.buy_price,
-					sell_price: order.sell_price,
-					send_price: order.send_price,
+					buyPrice: order.buyPrice,
+					sellPrice: order.sellPrice,
+					sendPrice: order.sendPrice,
 					sender: order.sender,
 					history: JSON.parse(JSON.stringify(order.history))
 				});
@@ -173,9 +173,9 @@
 				id: order.id,
 				user: order.user,
 				bag: order.bag,
-				buy_price: order.buy_price,
-				sell_price: order.sell_price,
-				send_price: order.send_price,
+				buyPrice: order.buyPrice,
+				sellPrice: order.sellPrice,
+				sendPrice: order.sendPrice,
 				sender: order.sender,
 				history: JSON.parse(JSON.stringify(order.history))
 			});
