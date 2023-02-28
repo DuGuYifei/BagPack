@@ -6,14 +6,14 @@
 		<el-table-column fixed prop="id" label="id" width="70" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="user" label="买家" width="80" />
 		<el-table-column prop="bag" label="包名" width="80" />
-		<el-table-column prop="stage_str" label="状态" width="120" />
-		<el-table-column prop="update_str" label="最新更新日期" width="135" sortable :sort-orders="sortOrders"
+		<el-table-column prop="stageStr" label="状态" width="120" />
+		<el-table-column prop="updateStr" label="最新更新日期" width="135" sortable :sort-orders="sortOrders"
 			sort-by="update" />
 		<el-table-column prop="benefit" label="收入计算" width="110" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="buy_price" label="我买价" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="sell_price" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="buyPrice" label="我买价" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="sellPrice" label="我卖价" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column prop="sender" label="快递员" width="90" sortable :sort-orders="sortOrders" />
-		<el-table-column prop="send_price" label="快递费" width="90" sortable :sort-orders="sortOrders" />
+		<el-table-column prop="sendPrice" label="快递费" width="90" sortable :sort-orders="sortOrders" />
 		<el-table-column fixed="right" align="center" width="250">
 			<template #header>
 				<el-input v-model="search" size="small"
@@ -25,7 +25,7 @@
 				</el-button>
 				<el-button size="small" @click="handleNext(scope.row.id)">新状态</el-button>
 				<el-button size="small" type="danger"
-					@click="deleteId = scope.row.id; deleteMoney = scope.row.sell_price; deleteUser = scope.row.user; dialogDeleteVisible=true;">
+					@click="deleteId = scope.row.id; deleteMoney = scope.row.sellPrice; deleteUser = scope.row.user; dialogDeleteVisible=true;">
 					删除
 				</el-button>
 			</template>
@@ -43,13 +43,13 @@
 				<el-input v-model="form.bag" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="我买价" label-width="140px">
-				<el-input v-model="form.buy_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.buyPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="我卖价" label-width="140px">
-				<el-input v-model="form.sell_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.sellPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="快递费" label-width="140px">
-				<el-input v-model="form.send_price" autocomplete="off" style="width: 300px;" />
+				<el-input v-model="form.sendPrice" autocomplete="off" style="width: 300px;" />
 			</el-form-item>
 			<el-form-item label="快递员" label-width="140px">
 				<el-input v-model="form.sender" autocomplete="off" style="width: 300px;" />
@@ -59,7 +59,7 @@
 			</el-form-item>
 			<el-form-item label="当前状态" label-width="140px">
 				<el-input v-model="form.stage" autocomplete="off" style="width: 300px;" />
-				&nbsp;&nbsp; 更新时间 {{form.update_str}}
+				&nbsp;&nbsp; 更新时间 {{form.updateStr}}
 			</el-form-item>
 			<p>
 				历史：<br />
@@ -152,14 +152,14 @@
 					id: -1,
 					user: "",
 					bag: "",
-					buy_price: 0,
-					sell_price: 0,
-					send_price: 0,
+					buyPrice: 0,
+					sellPrice: 0,
+					sendPrice: 0,
 					sender: "",
 					benefit: 0,
 					stage: 0,
 					update: new Date(),
-					update_str: "",
+					updateStr: "",
 					history: Array<HistoryItem>(),
 				},
 				calculateUsedOriginMoney: 0,
@@ -194,9 +194,9 @@
 				this.form.id = -1;
 				this.form.user = "";
 				this.form.bag = "";
-				this.form.buy_price = 0;
-				this.form.sell_price = 0;
-				this.form.send_price = 0;
+				this.form.buyPrice = 0;
+				this.form.sellPrice = 0;
+				this.form.sendPrice = 0;
 				this.form.sender = "";
 				this.form.benefit = 0;
 				this.form.stage = 0;
@@ -205,7 +205,7 @@
 					stage: 0,
 					date: this.form.update
 				}];
-				this.form.update_str = this.dateToString(this.form.update);
+				this.form.updateStr = this.dateToString(this.form.update);
 				this.calculateUsedOriginMoney = 0;
 				this.calculateUsedOriginUser = "";
 				this.dialogFormVisible = true;
@@ -237,7 +237,7 @@
 					let that = this;
 					getOrderRequest.onsuccess = function(event) {
 						that.form = new Order(getOrderRequest.result);
-						that.calculateUsedOriginMoney = that.form.sell_price;
+						that.calculateUsedOriginMoney = that.form.sellPrice;
 						that.calculateUsedOriginUser = that.form.user;
 						that.dialogFormVisible = true;
 					}
@@ -269,9 +269,9 @@
 							id: that.form.id,
 							user: that.form.user,
 							bag: that.form.bag,
-							buy_price: that.form.buy_price,
-							sell_price: that.form.sell_price,
-							send_price: that.form.send_price,
+							buyPrice: that.form.buyPrice,
+							sellPrice: that.form.sellPrice,
+							sendPrice: that.form.sendPrice,
 							sender: that.form.sender,
 							history: that.form.history
 						};
@@ -280,21 +280,21 @@
 
 						if (norder.user != that.calculateUsedOriginUser) {
 							let tempUser = getRequest.result;
-							tempUser.used += norder.sell_price;
+							tempUser.used += norder.sellPrice;
 							addOrUpdateUser(that, tempUser);
 							let getOldRequest = getUser(that.db, that.calculateUsedOriginUser);
 							getOldRequest.onsuccess = function(event) {
 								let originUser = getOldRequest.result;
-								originUser.used -= norder.sell_price;
+								originUser.used -= norder.sellPrice;
 								addOrUpdateUser(that, originUser);
 							}
 							getRequest.onerror = function(event) {
 								alert('原用户获取失败');
 								return;
 							}
-						} else if (norder.sell_price != that.calculateUsedOriginMoney) {
+						} else if (norder.sellPrice != that.calculateUsedOriginMoney) {
 							let tempUser = getRequest.result;
-							tempUser.used -= that.calculateUsedOriginMoney - norder.sell_price;
+							tempUser.used -= that.calculateUsedOriginMoney - norder.sellPrice;
 							addOrUpdateUser(that, tempUser);
 						}
 
@@ -360,7 +360,7 @@
 		bag: string
 		buyPrice: number
 		sellPrice: number
-		send_price: number
+		sendPrice: number
 		sender: string
 		benefit: number
 		stage: number
@@ -375,13 +375,13 @@
 			this.bag = order.bag;
 			this.buyPrice = order.buyPrice;
 			this.sellPrice = order.sellPrice;
-			this.send_price = order.send_price;
+			this.sendPrice = order.sendPrice;
 			this.sender = order.sender;
-			this.benefit = order.sellPrice - order.buyPrice - order.send_price;
+			this.benefit = order.sellPrice - order.buyPrice - order.sendPrice;
 			this.stage = order.history[order.history.length - 1].stage;
 			this.stageStr = stages[order.history[order.history.length - 1].stage];
-			this.history = order.history.map((historyItem: HistoryItem) => 
-				new HistoryItem(historyItem.stage, historyItem.date.toISOString())
+			this.history = order.history.map((historyItem: any) => 
+				new HistoryItem(historyItem.stage, historyItem.date)
 			)
 			this.update = this.history[this.history.length - 1].date;
 			this.updateStr = this.update.getFullYear() + "-" + (this.update.getMonth() + 1) + "-" + this.update

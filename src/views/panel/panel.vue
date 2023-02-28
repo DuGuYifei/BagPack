@@ -72,7 +72,7 @@
 		},
 		methods: {
 			handleTabClick(tab, _event){
-				if(tab.index === Tabs.Me){
+				if(Number(tab.index) === Tabs.Me){
 					calculateBenefit(this);
 					calculateDeposit(this);
 				}
